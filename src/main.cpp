@@ -76,10 +76,11 @@ void kmeans::insertGroup(vector<pointS> &vectDpoints) {
 int main() {
   kmeans myKmeans;
   vector<pointS> myVectorPoints = leerArchivo("../src/data2k.csv");
-  int contador = 0;
-  for (auto &x : myVectorPoints) {
-    cout << contador << ": " << x.x << "#" << x.y << endl;
-    contador++;
-  }
+  // int contador = 0;
+  // for (auto &x : myVectorPoints) {
+  //   cout << contador << ": " << x.x << "#" << x.y << endl;
+  //   contador++;
+  // }
+  myKmeans.insertGroup(myVectorPoints);
   return 0;
 }
