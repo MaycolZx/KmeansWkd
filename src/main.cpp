@@ -12,7 +12,23 @@
 using namespace std;
 
 vector<vector<float>> colorSbl;
-// float *colorSbl;
+
+void DBG_v() {
+  // int contador = 0;
+  // for (auto &x : myVectorPoints) {
+  //   cout << contador << ": " << x.x << "#" << x.y << endl;
+  //   contador++;
+  // }
+  //////////////////
+  // int contador = 0;
+  // for (auto &x : myVectorPoints) {
+  //   cout << contador << ": " << x.x << ";" << x.y
+  //        << " Color:" << x.colorPoint[0] << "," << x.colorPoint[1] << ","
+  //        << x.colorPoint[2] << endl;
+  //   contador++;
+  // }
+}
+
 void generationColor(int _k) {
   // float *colorG_arr[3] = new float[_k][3];
   // vector<float[3]> colorG_arr;
@@ -59,7 +75,23 @@ public:
   void insertG_C();
 
 private:
+  void averagePoints(vector<vector<pointS>> &data_P, vector<pointS> &data_PCI);
 };
+
+void kmeans::averagePoints(vector<vector<pointS>> &data_P,
+                           vector<pointS> &data_PCI) {
+  for (int i = 0; i < data_P.size(); i++) {
+    float xAvg = 0, yAvg = 0;
+    for (int j = 0; j < data_P[i].size(); j++) {
+      xAvg += data_P[i][j].x;
+      yAvg += data_P[i][j].y;
+    }
+    xAvg /= data_P[i].size();
+    yAvg /= data_P[i].size();
+    pointS tmPoint(xAvg, yAvg);
+    data_PCI[i] = tmPoint;
+  }
+}
 
 void kmeans::insertGroup(vector<pointS> &vectDpoints, int _k) {
   vector<pointS> pointC_index;
@@ -70,12 +102,8 @@ void kmeans::insertGroup(vector<pointS> &vectDpoints, int _k) {
     cout << i << "-center point: " << vectDpoints[numRandom].x << ","
          << vectDpoints[numRandom].y << endl;
   }
-  // delete[] pointC_index;
-  // vector<pointS> possCentro = {vectDpoints[0]};
-  // pointS *tmPos;
-  // float distMax = 0;
-  // int contI = 0;
-  while (true) {
+  int contI = 0;
+  while (contI < 10) {
     vector<vector<pointS>> datosF_C(_k);
     for (int i = 0; i < vectDpoints.size(); i++) {
       float min_V = 0;
@@ -97,35 +125,19 @@ void kmeans::insertGroup(vector<pointS> &vectDpoints, int _k) {
       vectDpoints[i].colorPoint[0] = colorSbl[indexC][0];
       vectDpoints[i].colorPoint[1] = colorSbl[indexC][1];
       vectDpoints[i].colorPoint[2] = colorSbl[indexC][2];
-      // for (int j = 0; j < possCentro.size(); j++) {
-      //   if (vTcmp[j] >= distMax) {
-      //     if (possCentro.size() > 1 && vTcmp[possCentro.size()] < vTcmp[j]) {
-      //       tmPos = new pointS(vectDpoints[i].x, vectDpoints[i].y);
-      //       continue;
-      //     }
-      //     distMax = vTcmp[j];
-      //     tmPos = new pointS(vectDpoints[i].x, vectDpoints[i].y);
-      //   }
-      // }
     }
     // updateCentro
-
-    // possCentro.push_back(*tmPos);
-    // contI++;
+    averagePoints(datosF_C, pointC_index);
+    contI++;
     break;
   }
 }
 
 int main(int argc, char *argv[]) {
-  int k_P = 2;
+  int k_P = 20;
   kmeans myKmeans;
   vector<pointS> myVectorPoints = leerArchivo("../src/data2k.csv");
   generationColor(k_P);
-  // int contador = 0;
-  // for (auto &x : myVectorPoints) {
-  //   cout << contador << ": " << x.x << "#" << x.y << endl;
-  //   contador++;
-  // }
   auto inicio = std::chrono::high_resolution_clock::now();
   myKmeans.insertGroup(myVectorPoints, k_P);
   auto fin = std::chrono::high_resolution_clock::now();
@@ -133,14 +145,6 @@ int main(int argc, char *argv[]) {
       std::chrono::duration_cast<std::chrono::microseconds>(fin - inicio);
   std::cout << "Tiempo de ejecución: " << duracion.count() << " microsegundos"
             << std::endl;
-  // int contador = 0;
-  // for (auto &x : myVectorPoints) {
-  //   cout << contador << ": " << x.x << ";" << x.y
-  //        << " Color:" << x.colorPoint[0] << "," << x.colorPoint[1] << ","
-  //        << x.colorPoint[2] << endl;
-  //   contador++;
-  // }
-
   DrawDS(argc, argv, myVectorPoints);
   return 0;
 }
