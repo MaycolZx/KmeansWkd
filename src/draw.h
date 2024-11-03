@@ -3,6 +3,7 @@
 #include <iostream>
 #include <vector>
 using namespace std;
+
 struct pointS {
   float x, y;
   pointS(float _x, float _y) {
@@ -10,10 +11,10 @@ struct pointS {
     y = _y;
   }
   // float colorPoint[3] = {};
-  float colorPoint[3];
+  float colorPoint[3] = {255, 0, 0};
 };
-
-vector<pointS> datosP;
+vector<pointS> myVectorPoints;
+// vector<pointS> datosP;
 
 void init() {
   glClearColor(0.0, 0.0, 0.0, 0.0);
@@ -25,11 +26,12 @@ void init() {
 
 void drawPoinsF() {
   glLineWidth(2.0f);
-  for (int i = 0; i < datosP.size(); i++) {
+  for (int i = 0; i < myVectorPoints.size(); i++) {
     glBegin(GL_POINTS);
-    glColor3f(datosP[i].colorPoint[0], datosP[i].colorPoint[1],
-              datosP[i].colorPoint[2]);
-    glVertex2f(datosP[i].x / 500 - 0.5, datosP[i].y / 500 - 0.25);
+    glColor3f(myVectorPoints[i].colorPoint[0], myVectorPoints[i].colorPoint[1],
+              myVectorPoints[i].colorPoint[2]);
+    glVertex2f(myVectorPoints[i].x / 500 - 0.5,
+               myVectorPoints[i].y / 500 - 0.25);
     glEnd();
   }
   glBegin(GL_LINE_LOOP);
@@ -47,18 +49,22 @@ void display() {
   glFlush();
 }
 
-void DrawDS(int argc, char **argv, vector<pointS> &_datos) {
-  datosP = _datos;
-  if (datosP.empty()) {
+void timer(int) {
+  glutPostRedisplay();         // Fuerza la actualización de la ventana
+  glutTimerFunc(16, timer, 0); // Llama a timer cada 16 ms (~60 FPS)
+}
+
+void DrawDS(int argc, char **argv) {
+  if (myVectorPoints.empty()) {
     cout << "no se cargaron los datos correctamente" << endl;
     return;
   }
   glutInit(&argc, argv);
   glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
   glutInitWindowSize(500, 500);
-  // glClearColor(0.0, 255.0, 0.0, 1.0);
   glutCreateWindow("Kmens-viClusters");
   init();
   glutDisplayFunc(display);
+  glutTimerFunc(0, timer, 0);
   glutMainLoop();
 }

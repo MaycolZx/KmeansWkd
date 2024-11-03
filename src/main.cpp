@@ -6,12 +6,12 @@
 #include <cstring>
 #include <ctime>
 #include <fstream>
+#include <functional>
 #include <iostream>
 #include <string>
+#include <thread>
 #include <vector>
 using namespace std;
-
-vector<vector<float>> colorSbl;
 
 void DBG_v() {
   // int contador = 0;
@@ -29,6 +29,7 @@ void DBG_v() {
   // }
 }
 
+vector<vector<float>> colorSbl;
 void generationColor(int _k) {
   // float *colorG_arr[3] = new float[_k][3];
   // vector<float[3]> colorG_arr;
@@ -89,6 +90,9 @@ void kmeans::averagePoints(vector<vector<pointS>> &data_P,
     xAvg /= data_P[i].size();
     yAvg /= data_P[i].size();
     pointS tmPoint(xAvg, yAvg);
+    tmPoint.colorPoint[0] = data_P[i][0].colorPoint[0];
+    tmPoint.colorPoint[1] = data_P[i][0].colorPoint[1];
+    tmPoint.colorPoint[2] = data_P[i][0].colorPoint[2];
     data_PCI[i] = tmPoint;
   }
 }
@@ -99,11 +103,17 @@ void kmeans::insertGroup(vector<pointS> &vectDpoints, int _k) {
   for (int i = 0; i < _k; i++) {
     int numRandom = std::rand() % vectDpoints.size() + 1;
     pointC_index.push_back(vectDpoints[numRandom]);
-    cout << i << "-center point: " << vectDpoints[numRandom].x << ","
-         << vectDpoints[numRandom].y << endl;
   }
   int contI = 0;
-  while (contI < 10) {
+  while (contI < 100) {
+    for (int i = 0; i < pointC_index.size(); i++) {
+      cout << contI << "-center point: " << pointC_index[i].x << ","
+           << pointC_index[i].y << endl;
+      cout << "Color: " << pointC_index[i].colorPoint[0] << ","
+           << pointC_index[i].colorPoint[1] << ","
+           << pointC_index[i].colorPoint[2] << endl;
+    }
+    cout << "======" << endl;
     vector<vector<pointS>> datosF_C(_k);
     for (int i = 0; i < vectDpoints.size(); i++) {
       float min_V = 0;
@@ -128,23 +138,32 @@ void kmeans::insertGroup(vector<pointS> &vectDpoints, int _k) {
     }
     // updateCentro
     averagePoints(datosF_C, pointC_index);
+    std::this_thread::sleep_for(std::chrono::seconds(1));
     contI++;
-    break;
+    // break;
   }
 }
 
 int main(int argc, char *argv[]) {
-  int k_P = 20;
+  int k_P = 75;
   kmeans myKmeans;
-  vector<pointS> myVectorPoints = leerArchivo("../src/data2k.csv");
+  myVectorPoints = leerArchivo("../src/data2k.csv");
   generationColor(k_P);
   auto inicio = std::chrono::high_resolution_clock::now();
-  myKmeans.insertGroup(myVectorPoints, k_P);
+  thread(&kmeans::insertGroup, std::ref(myKmeans), std::ref(myVectorPoints),
+         k_P)
+      .detach();
+  // myKmeans.insertGroup(myVectorPoints, k_P);
+  // std::thread t(&kmeans::insertGroup, std::ref(myKmeans),
+  // std::ref(myVectorPoints), k_P);
+  // t.join();
   auto fin = std::chrono::high_resolution_clock::now();
   auto duracion =
       std::chrono::duration_cast<std::chrono::microseconds>(fin - inicio);
   std::cout << "Tiempo de ejecución: " << duracion.count() << " microsegundos"
             << std::endl;
-  DrawDS(argc, argv, myVectorPoints);
+  // thread(DrawDS, ref(argc), ref(argv)).detach();
+  DrawDS(argc, argv);
+  // t.join();
   return 0;
 }
