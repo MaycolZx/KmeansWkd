@@ -1,4 +1,5 @@
 #include "draw.h"
+#include <chrono>
 #include <cmath>
 #include <cstddef>
 #include <cstdlib>
@@ -10,13 +11,25 @@
 #include <vector>
 using namespace std;
 
-// struct pointS {
-//   float x, y;
-//   pointS(float _x, float _y) {
-//     x = _x;
-//     y = _y;
-//   }
-// };
+vector<vector<float>> colorSbl;
+// float *colorSbl;
+void generationColor(int _k) {
+  // float *colorG_arr[3] = new float[_k][3];
+  // vector<float[3]> colorG_arr;
+  vector<vector<float>> colorG_arr;
+  std::srand(std::time(0));
+  for (int i = 0; i < _k; i++) {
+    vector<float> tmpC;
+    int numR = (std::rand() % 7) * 35;
+    int numG = (std::rand() % 7) * 35;
+    int numB = (std::rand() % 7) * 35;
+    tmpC.push_back(numR);
+    tmpC.push_back(numG);
+    tmpC.push_back(numB);
+    colorG_arr.push_back(tmpC);
+  }
+  colorSbl = colorG_arr;
+}
 
 vector<pointS> leerArchivo(string filename) {
   ifstream fileS(filename);
@@ -48,50 +61,86 @@ public:
 private:
 };
 
-void kmeans::insertG_C() {
-  std::srand(std::time(0));
-  int numeroAleatorio = std::rand() % 100 + 1;
-}
-
 void kmeans::insertGroup(vector<pointS> &vectDpoints, int _k) {
-  vector<pointS> possCentro = {vectDpoints[0]};
-  pointS *tmPos;
-  float distMax = 0;
-  int contI = 0;
-  while (contI < _k) {
+  vector<pointS> pointC_index;
+  std::srand(std::time(0));
+  for (int i = 0; i < _k; i++) {
+    int numRandom = std::rand() % vectDpoints.size() + 1;
+    pointC_index.push_back(vectDpoints[numRandom]);
+    cout << i << "-center point: " << vectDpoints[numRandom].x << ","
+         << vectDpoints[numRandom].y << endl;
+  }
+  // delete[] pointC_index;
+  // vector<pointS> possCentro = {vectDpoints[0]};
+  // pointS *tmPos;
+  // float distMax = 0;
+  // int contI = 0;
+  while (true) {
+    vector<vector<pointS>> datosF_C(_k);
     for (int i = 0; i < vectDpoints.size(); i++) {
-      float vTcmp[possCentro.size()];
-      for (int j = 0; j < possCentro.size(); j++) {
-        float euclidiana = sqrt(pow(vectDpoints[i].y - possCentro[j].y, 2) +
-                                pow(vectDpoints[i].x - possCentro[j].x, 2));
-        vTcmp[j] = euclidiana;
-      }
-      for (int j = 0; j < possCentro.size(); j++) {
-        if (vTcmp[j] >= distMax) {
-          if (possCentro.size() > 1 && vTcmp[possCentro.size()] < vTcmp[j]) {
-            tmPos = new pointS(vectDpoints[i].x, vectDpoints[i].y);
-            continue;
-          }
-          distMax = vTcmp[j];
-          tmPos = new pointS(vectDpoints[i].x, vectDpoints[i].y);
+      float min_V = 0;
+      int indexC = 0;
+      for (int j = 0; j < _k; j++) {
+        float euclidiana = sqrt(pow(vectDpoints[i].y - pointC_index[j].y, 2) +
+                                pow(vectDpoints[i].x - pointC_index[j].x, 2));
+        if (j == 0) {
+          min_V = euclidiana;
+          continue;
+        } else if (euclidiana < min_V) {
+          min_V = euclidiana;
+          indexC = j;
         }
       }
+      datosF_C[indexC].push_back(vectDpoints[i]);
+      if (colorSbl.empty())
+        return;
+      vectDpoints[i].colorPoint[0] = colorSbl[indexC][0];
+      vectDpoints[i].colorPoint[1] = colorSbl[indexC][1];
+      vectDpoints[i].colorPoint[2] = colorSbl[indexC][2];
+      // for (int j = 0; j < possCentro.size(); j++) {
+      //   if (vTcmp[j] >= distMax) {
+      //     if (possCentro.size() > 1 && vTcmp[possCentro.size()] < vTcmp[j]) {
+      //       tmPos = new pointS(vectDpoints[i].x, vectDpoints[i].y);
+      //       continue;
+      //     }
+      //     distMax = vTcmp[j];
+      //     tmPos = new pointS(vectDpoints[i].x, vectDpoints[i].y);
+      //   }
+      // }
     }
-    possCentro.push_back(*tmPos);
-    contI++;
+    // updateCentro
+
+    // possCentro.push_back(*tmPos);
+    // contI++;
+    break;
   }
 }
 
 int main(int argc, char *argv[]) {
+  int k_P = 2;
   kmeans myKmeans;
   vector<pointS> myVectorPoints = leerArchivo("../src/data2k.csv");
+  generationColor(k_P);
   // int contador = 0;
   // for (auto &x : myVectorPoints) {
   //   cout << contador << ": " << x.x << "#" << x.y << endl;
   //   contador++;
   // }
-  int k_P = 2;
+  auto inicio = std::chrono::high_resolution_clock::now();
   myKmeans.insertGroup(myVectorPoints, k_P);
+  auto fin = std::chrono::high_resolution_clock::now();
+  auto duracion =
+      std::chrono::duration_cast<std::chrono::microseconds>(fin - inicio);
+  std::cout << "Tiempo de ejecución: " << duracion.count() << " microsegundos"
+            << std::endl;
+  // int contador = 0;
+  // for (auto &x : myVectorPoints) {
+  //   cout << contador << ": " << x.x << ";" << x.y
+  //        << " Color:" << x.colorPoint[0] << "," << x.colorPoint[1] << ","
+  //        << x.colorPoint[2] << endl;
+  //   contador++;
+  // }
+
   DrawDS(argc, argv, myVectorPoints);
   return 0;
 }
