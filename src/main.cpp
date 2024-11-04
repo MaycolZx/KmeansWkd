@@ -56,6 +56,7 @@ public:
   void init() { cout << "Este es el init"; }
   bool insert(pointS *valueN) { return false; }
   void insertGroup(vector<pointS> &vectDpoints, int _k);
+  void insertGroup_KDT(vector<pointS> &vectDpoints, int _k);
   vector<pointS> genRandomP_02(vector<pointS> &vectDpoints, int _k);
 
 private:
@@ -151,6 +152,51 @@ void kmeans::insertGroup(vector<pointS> &vectDpoints, int _k) {
     if (verif == pointC_index.size())
       break;
     poinTmp = pointC_index;
+    // Borramos el contenido de kd_tree
+    // insertamos los nuevos centros del update
+    //  std::this_thread::sleep_for(std::chrono::seconds(1));
+    contI++;
+  }
+}
+
+void kmeans::insertGroup_KDT(vector<pointS> &vectDpoints, int _k) {
+  vector<pointS> pointC_index = genRandomP_02(vectDpoints, _k);
+  vector<pointS> poinTmp = pointC_index;
+  kd_tree myKdTree(2);
+  for (int i = 0; i < pointC_index.size(); i++) {
+    myKdTree.insertS(pointC_index[i], i);
+  }
+  int contI = 0;
+  while (true) {
+    // for (int i = 0; i < pointC_index.size(); i++) {
+    //   cout << contI << "-center point: " << pointC_index[i].x << ","
+    //        << pointC_index[i].y << endl;
+    // }
+    vector<vector<pointS>> datosF_C(_k);
+    for (int i = 0; i < vectDpoints.size(); i++) {
+      int indexC = 0;
+      nodeBin *puntoC = myKdTree.findS_NN(vectDpoints[i]);
+      datosF_C[puntoC->indexCluster].push_back(
+          vectDpoints[puntoC->indexCluster]);
+      if (colorSbl.empty()) {
+        cout << "no hay colores para asignar" << endl;
+        return;
+      }
+      vectDpoints[i].colorPoint[0] = colorSbl[puntoC->indexCluster][0];
+      vectDpoints[i].colorPoint[1] = colorSbl[puntoC->indexCluster][1];
+      vectDpoints[i].colorPoint[2] = colorSbl[puntoC->indexCluster][2];
+    }
+    // updateCentro
+    averagePoints(datosF_C, pointC_index);
+    int verif = 0;
+    for (int i = 0; i < pointC_index.size(); i++) {
+      if (pointC_index[i].x == poinTmp[i].x &&
+          pointC_index[i].y == poinTmp[i].y)
+        verif++;
+    }
+    if (verif == pointC_index.size())
+      break;
+    poinTmp = pointC_index;
     // std::this_thread::sleep_for(std::chrono::seconds(1));
     contI++;
   }
@@ -177,11 +223,5 @@ int main(int argc, char *argv[]) {
   // thread(DrawDS, ref(argc), ref(argv)).detach();
   // DrawDS(argc, argv);
   // t.join();
-  kd_tree myKdTree(2);
-  vector<pointS> pointCtr = myKmeans.genRandomP_02(myVectorPoints, k_P);
-  for (int i = 0; i < pointCtr.size(); i++) {
-    myKdTree.insertS(pointCtr[i]);
-  }
-  myKdTree.findS_NN(myVectorPoints[0]);
   return 0;
 }
