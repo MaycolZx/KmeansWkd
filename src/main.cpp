@@ -1,4 +1,5 @@
-#include "draw.h"
+#include "kdTree.h"
+#include <algorithm>
 #include <chrono>
 #include <cmath>
 #include <cstddef>
@@ -6,33 +7,16 @@
 #include <cstring>
 #include <ctime>
 #include <fstream>
-#include <functional>
 #include <iostream>
+#include <random>
 #include <string>
-#include <thread>
+#include <vector>
+// #include <thread>
 #include <vector>
 using namespace std;
 
-void DBG_v() {
-  // int contador = 0;
-  // for (auto &x : myVectorPoints) {
-  //   cout << contador << ": " << x.x << "#" << x.y << endl;
-  //   contador++;
-  // }
-  //////////////////
-  // int contador = 0;
-  // for (auto &x : myVectorPoints) {
-  //   cout << contador << ": " << x.x << ";" << x.y
-  //        << " Color:" << x.colorPoint[0] << "," << x.colorPoint[1] << ","
-  //        << x.colorPoint[2] << endl;
-  //   contador++;
-  // }
-}
-
 vector<vector<float>> colorSbl;
 void generationColor(int _k) {
-  // float *colorG_arr[3] = new float[_k][3];
-  // vector<float[3]> colorG_arr;
   vector<vector<float>> colorG_arr;
   std::srand(std::time(0));
   for (int i = 0; i < _k; i++) {
@@ -49,11 +33,12 @@ void generationColor(int _k) {
 }
 
 vector<pointS> leerArchivo(string filename) {
+  vector<pointS> datos = {};
   ifstream fileS(filename);
   if (!fileS.is_open()) {
     cout << "El archivo no se pudo abrir";
+    return datos;
   }
-  vector<pointS> datos;
   string valorStr;
   while (fileS >> valorStr) {
     size_t pos = valorStr.find(',');
@@ -69,15 +54,43 @@ vector<pointS> leerArchivo(string filename) {
 
 class kmeans {
 public:
-  int algo();
   void init() { cout << "Este es el init"; }
   bool insert(pointS *valueN) { return false; }
   void insertGroup(vector<pointS> &vectDpoints, int _k);
-  void insertG_C();
+  vector<pointS> genRandomP_02(vector<pointS> &vectDpoints, int _k);
 
 private:
+  vector<pointS> genRandomP_01(vector<pointS> &vectDpoints, int _k);
   void averagePoints(vector<vector<pointS>> &data_P, vector<pointS> &data_PCI);
 };
+
+vector<pointS> kmeans::genRandomP_01(vector<pointS> &vectDpoints, int _k) {
+  vector<pointS> pointC_index;
+  vector<int> numerosRandom;
+  std::srand(std::time(0));
+  for (int i = 0; i < _k; i++) {
+    int numRandom = std::rand() % vectDpoints.size() + 1;
+    numerosRandom.push_back(numRandom);
+    pointC_index.push_back(vectDpoints[numRandom]);
+  }
+  return pointC_index;
+}
+vector<pointS> kmeans::genRandomP_02(vector<pointS> &vectDpoints, int _k) {
+  vector<pointS> pointC_index;
+  std::vector<int> numeros;
+  for (int i = 0; i < vectDpoints.size(); ++i) {
+    numeros.push_back(i);
+  }
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  std::shuffle(numeros.begin(), numeros.end(), gen);
+  std::vector<int> numerosAleatoriosUnicos(numeros.begin(),
+                                           numeros.begin() + _k);
+  for (int i = 0; i < _k; i++) {
+    pointC_index.push_back(vectDpoints[numeros[i]]);
+  }
+  return pointC_index;
+}
 
 void kmeans::averagePoints(vector<vector<pointS>> &data_P,
                            vector<pointS> &data_PCI) {
@@ -98,22 +111,14 @@ void kmeans::averagePoints(vector<vector<pointS>> &data_P,
 }
 
 void kmeans::insertGroup(vector<pointS> &vectDpoints, int _k) {
-  vector<pointS> pointC_index;
-  std::srand(std::time(0));
-  for (int i = 0; i < _k; i++) {
-    int numRandom = std::rand() % vectDpoints.size() + 1;
-    pointC_index.push_back(vectDpoints[numRandom]);
-  }
+  vector<pointS> pointC_index = genRandomP_02(vectDpoints, _k);
+  vector<pointS> poinTmp = pointC_index;
   int contI = 0;
-  while (contI < 100) {
-    // for (int i = 0; i < pointC_index.size(); i++) {
-    //   cout << contI << "-center point: " << pointC_index[i].x << ","
-    //        << pointC_index[i].y << endl;
-    //   cout << "Color: " << pointC_index[i].colorPoint[0] << ","
-    //        << pointC_index[i].colorPoint[1] << ","
-    //        << pointC_index[i].colorPoint[2] << endl;
-    // }
-    // cout << "======" << endl;
+  while (contI < 50) {
+    for (int i = 0; i < pointC_index.size(); i++) {
+      cout << contI << "-center point: " << pointC_index[i].x << ","
+           << pointC_index[i].y << endl;
+    }
     vector<vector<pointS>> datosF_C(_k);
     for (int i = 0; i < vectDpoints.size(); i++) {
       float min_V = 0;
@@ -138,14 +143,22 @@ void kmeans::insertGroup(vector<pointS> &vectDpoints, int _k) {
     }
     // updateCentro
     averagePoints(datosF_C, pointC_index);
+    int verif = 0;
+    for (int i = 0; i < pointC_index.size(); i++) {
+      if (pointC_index[i].x == poinTmp[i].x &&
+          pointC_index[i].y == poinTmp[i].y)
+        verif++;
+    }
+    if (verif == pointC_index.size())
+      break;
+    poinTmp = pointC_index;
     // std::this_thread::sleep_for(std::chrono::seconds(1));
     contI++;
-    // break;
   }
 }
 
 int main(int argc, char *argv[]) {
-  int k_P = 200;
+  int k_P = 10;
   kmeans myKmeans;
   myVectorPoints = leerArchivo("../src/data2k.csv");
   generationColor(k_P);
@@ -163,7 +176,12 @@ int main(int argc, char *argv[]) {
   std::cout << "Tiempo de ejecución: " << duracion.count() << " microsegundos"
             << std::endl;
   // thread(DrawDS, ref(argc), ref(argv)).detach();
-  DrawDS(argc, argv);
+  // DrawDS(argc, argv);
   // t.join();
+  kd_tree myKdTree(2);
+  vector<pointS> pointCtr = myKmeans.genRandomP_02(myVectorPoints, k_P);
+  for (int i = 0; i < pointCtr.size(); i++) {
+    myKdTree.insertS(pointCtr[i]);
+  }
   return 0;
 }
