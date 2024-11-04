@@ -10,8 +10,7 @@
 #include <iostream>
 #include <random>
 #include <string>
-#include <vector>
-// #include <thread>
+#include <thread>
 #include <vector>
 using namespace std;
 
@@ -158,15 +157,15 @@ void kmeans::insertGroup(vector<pointS> &vectDpoints, int _k) {
 }
 
 int main(int argc, char *argv[]) {
-  int k_P = 10;
+  int k_P = 18;
   kmeans myKmeans;
   myVectorPoints = leerArchivo("../src/data2k.csv");
   generationColor(k_P);
   auto inicio = std::chrono::high_resolution_clock::now();
   // thread(&kmeans::insertGroup, std::ref(myKmeans), std::ref(myVectorPoints),
-  // k_P)
-  // .detach();
-  myKmeans.insertGroup(myVectorPoints, k_P);
+  //        k_P)
+  //     .detach();
+  // myKmeans.insertGroup(myVectorPoints, k_P);
   // std::thread t(&kmeans::insertGroup, std::ref(myKmeans),
   // std::ref(myVectorPoints), k_P);
   // t.join();
@@ -183,5 +182,6 @@ int main(int argc, char *argv[]) {
   for (int i = 0; i < pointCtr.size(); i++) {
     myKdTree.insertS(pointCtr[i]);
   }
+  myKdTree.findS_NN(myVectorPoints[0]);
   return 0;
 }

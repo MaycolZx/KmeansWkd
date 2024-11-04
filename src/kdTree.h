@@ -1,16 +1,8 @@
 #include "draw.h"
+#include <cmath>
 #include <iostream>
+#include <stack>
 using namespace std;
-
-// struct pointS {
-//   float x, y;
-//   pointS(float _x, float _y) {
-//     x = _x;
-//     y = _y;
-//   }
-//   // float colorPoint[3] = {};
-//   float colorPoint[3] = {255, 0, 0};
-// };
 
 struct nodeBin {
   nodeBin *nodos[2];
@@ -25,14 +17,117 @@ struct nodeBin {
 class kd_tree {
 public:
   void insertS(pointS pointV);
+  pointS findS_NN(pointS pointV);
   kd_tree(int _numForD) { numForD = _numForD; }
 
 private:
-  // void findS();
   nodeBin *root = nullptr;
   int numForD = 0;
 };
 
+// pointS kd_tree::findS_NN(pointS pointV) {
+//   stack<nodeBin *> backSnode;
+//   stack<int> indexAcc;
+//   nodeBin *tmP = root;
+//   float pointNode[2] = {pointV.x, pointV.y};
+//   while (tmP) {
+//     int indexLevel = root->n_Dim;
+//     backSnode.push(tmP);
+//     if (pointNode[indexLevel] < tmP->pos[indexLevel]) {
+//       tmP = tmP->nodos[0];
+//       indexAcc.push(0);
+//     } else {
+//       tmP = tmP->nodos[1];
+//       indexAcc.push(1);
+//     }
+//   }
+//   tmP = backSnode.top();
+//   // cout << "Ultimo nodo: " << tmP->pos[0] << "," << tmP->pos[1] << endl;
+//   float distancia01 =
+//       sqrt(pow(pointV.x - tmP->pos[0], 2) + pow(pointV.y - tmP->pos[1], 2));
+//   int nvlI = tmP->n_Dim;
+//   backSnode.pop();
+//   tmP = backSnode.top();
+//   // cout << "Ultimo nodo: " << tmP->nodos[indexAcc.top()]->pos[0] << ","
+//   //      << tmP->nodos[indexAcc.top()]->pos[1] << endl;
+//   float distanciaPerp = pointNode[tmP->n_Dim] - tmP->pos[tmP->n_Dim];
+//   pointS *NNpoint;
+//   cout << "D: " << distanciaPerp << " < " << distancia01 << endl;
+//   indexAcc.pop();
+//   if (distanciaPerp < distancia01) {
+//     int a = indexAcc.top();
+//     cout << "Debemos buscar la segunda opcion: " << a << endl;
+//     if (a == 0) {
+//       a = 1;
+//     } else {
+//       a = 0;
+//     }
+//     nodeBin *secOpt = tmP->nodos[a];
+//     if (!secOpt)
+//       cout << "Nodo null";
+//     float distancia03 = sqrt(pow(pointV.x - secOpt->pos[0], 2) +
+//                              pow(pointV.y - secOpt->pos[1], 2));
+//     cout << "D: " << distancia03 << " < " << distancia01 << endl;
+//     if (distancia03 < distancia01) {
+//       NNpoint = new pointS(secOpt->pos[0], secOpt->pos[1]);
+//       return *NNpoint;
+//     }
+//   }
+//   NNpoint = new pointS(tmP->pos[0], tmP->pos[1]);
+//   return *NNpoint;
+// }
+
+pointS kd_tree::findS_NN(pointS pointV) {
+  stack<nodeBin *> backSnode;
+  stack<int> indexAcc;
+  nodeBin *tmP = root;
+  float pointNode[2] = {pointV.x, pointV.y};
+  int indexLevel = 0;
+
+  while (tmP) {
+    backSnode.push(tmP);
+    indexLevel = tmP->n_Dim;
+
+    if (pointNode[indexLevel] < tmP->pos[indexLevel]) {
+      tmP = tmP->nodos[0];
+      indexAcc.push(0);
+    } else {
+      tmP = tmP->nodos[1];
+      indexAcc.push(1);
+    }
+  }
+
+  tmP = backSnode.top();
+  backSnode.pop();
+
+  float minDist2 =
+      pow(pointV.x - tmP->pos[0], 2) + pow(pointV.y - tmP->pos[1], 2);
+  pointS NNpoint(tmP->pos[0], tmP->pos[1]);
+
+  while (!backSnode.empty()) {
+    tmP = backSnode.top();
+    backSnode.pop();
+
+    float distPerp = pow(pointNode[tmP->n_Dim] - tmP->pos[tmP->n_Dim], 2);
+    if (distPerp < minDist2) {
+      nodeBin *secOpt = tmP->nodos[1 - indexAcc.top()];
+      indexAcc.pop();
+
+      if (secOpt) {
+        float dist2 = pow(pointV.x - secOpt->pos[0], 2) +
+                      pow(pointV.y - secOpt->pos[1], 2);
+        if (dist2 < minDist2) {
+          minDist2 = dist2;
+          NNpoint = pointS(secOpt->pos[0], secOpt->pos[1]);
+        }
+      }
+    }
+  }
+
+  return NNpoint;
+}
+
+/////////////////////////////////////////////////
 void kd_tree::insertS(pointS pointV) {
   if (!root) {
     root = new nodeBin(0);
