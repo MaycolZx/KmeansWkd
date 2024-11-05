@@ -19,12 +19,15 @@ class kd_tree {
 public:
   void insertS(pointS pointV, int i_Cluster);
   nodeBin *findS_NN(pointS pointV);
+  void cleanKD();
   kd_tree(int _numForD) { numForD = _numForD; }
 
 private:
   nodeBin *root = nullptr;
   int numForD = 0;
 };
+
+void kd_tree::cleanKD() { root = nullptr; }
 
 nodeBin *kd_tree::findS_NN(pointS pointV) {
   stack<nodeBin *> backSnode;

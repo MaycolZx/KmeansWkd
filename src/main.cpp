@@ -53,7 +53,6 @@ vector<pointS> leerArchivo(string filename) {
 
 class kmeans {
 public:
-  void init() { cout << "Este es el init"; }
   bool insert(pointS *valueN) { return false; }
   void insertGroup(vector<pointS> &vectDpoints, int _k);
   void insertGroup_KDT(vector<pointS> &vectDpoints, int _k);
@@ -114,7 +113,8 @@ void kmeans::insertGroup(vector<pointS> &vectDpoints, int _k) {
   vector<pointS> pointC_index = genRandomP_02(vectDpoints, _k);
   vector<pointS> poinTmp = pointC_index;
   int contI = 0;
-  while (contI < 50) {
+  while (true) {
+    datosCentrosG.push_back(pointC_index);
     for (int i = 0; i < pointC_index.size(); i++) {
       cout << contI << "-center point: " << pointC_index[i].x << ","
            << pointC_index[i].y << endl;
@@ -152,8 +152,6 @@ void kmeans::insertGroup(vector<pointS> &vectDpoints, int _k) {
     if (verif == pointC_index.size())
       break;
     poinTmp = pointC_index;
-    // Borramos el contenido de kd_tree
-    // insertamos los nuevos centros del update
     //  std::this_thread::sleep_for(std::chrono::seconds(1));
     contI++;
   }
@@ -168,10 +166,11 @@ void kmeans::insertGroup_KDT(vector<pointS> &vectDpoints, int _k) {
   }
   int contI = 0;
   while (true) {
-    // for (int i = 0; i < pointC_index.size(); i++) {
-    //   cout << contI << "-center point: " << pointC_index[i].x << ","
-    //        << pointC_index[i].y << endl;
-    // }
+    datosCentrosG.push_back(pointC_index);
+    for (int i = 0; i < pointC_index.size(); i++) {
+      cout << contI << "-center point: " << pointC_index[i].x << ","
+           << pointC_index[i].y << endl;
+    }
     vector<vector<pointS>> datosF_C(_k);
     for (int i = 0; i < vectDpoints.size(); i++) {
       int indexC = 0;
@@ -197,13 +196,17 @@ void kmeans::insertGroup_KDT(vector<pointS> &vectDpoints, int _k) {
     if (verif == pointC_index.size())
       break;
     poinTmp = pointC_index;
+    myKdTree.cleanKD();
+    for (int i = 0; i < pointC_index.size(); i++) {
+      myKdTree.insertS(pointC_index[i], i);
+    }
     // std::this_thread::sleep_for(std::chrono::seconds(1));
     contI++;
   }
 }
 
 int main(int argc, char *argv[]) {
-  int k_P = 18;
+  int k_P = 2;
   kmeans myKmeans;
   myVectorPoints = leerArchivo("../src/data2k.csv");
   generationColor(k_P);
@@ -211,17 +214,18 @@ int main(int argc, char *argv[]) {
   // thread(&kmeans::insertGroup, std::ref(myKmeans), std::ref(myVectorPoints),
   //        k_P)
   //     .detach();
-  // myKmeans.insertGroup(myVectorPoints, k_P);
+  myKmeans.insertGroup(myVectorPoints, k_P);
+  // myKmeans.insertGroup_KDT(myVectorPoints, k_P);
   // std::thread t(&kmeans::insertGroup, std::ref(myKmeans),
   // std::ref(myVectorPoints), k_P);
   // t.join();
   auto fin = std::chrono::high_resolution_clock::now();
   auto duracion =
       std::chrono::duration_cast<std::chrono::microseconds>(fin - inicio);
-  std::cout << "Tiempo de ejecución: " << duracion.count() << " microsegundos"
+  std::cout << "Tiempo de ejecucion: " << duracion.count() << " microsegundos"
             << std::endl;
   // thread(DrawDS, ref(argc), ref(argv)).detach();
-  // DrawDS(argc, argv);
+  DrawDS(argc, argv);
   // t.join();
   return 0;
 }

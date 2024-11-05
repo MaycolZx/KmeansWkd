@@ -14,7 +14,7 @@ struct pointS {
   float colorPoint[3] = {255, 0, 0};
 };
 vector<pointS> myVectorPoints;
-// vector<pointS> datosP;
+vector<vector<pointS>> datosCentrosG;
 
 void init() {
   glClearColor(0.0, 0.0, 0.0, 0.0);
@@ -33,6 +33,21 @@ void drawPoinsF() {
     glVertex2f(myVectorPoints[i].x / 500 - 0.5,
                myVectorPoints[i].y / 500 - 0.25);
     glEnd();
+  }
+  for (int i = 0; i < datosCentrosG.size(); i++) {
+    for (int j = 0; j < datosCentrosG[i].size(); j++) {
+      glBegin(GL_POLYGON);
+      glColor3f(255, 0, 0);
+      pointS centroD = datosCentrosG[i][j];
+      float vNormX = (centroD.x / 500) - 0.75;
+      float vNormY = (centroD.y / 500) - 0.5;
+      float rectSize = 0.005;
+      glVertex2f(vNormX - rectSize, vNormY - rectSize);
+      glVertex2f(vNormX - rectSize, vNormY + rectSize);
+      glVertex2f(vNormX + rectSize, vNormY + rectSize);
+      glVertex2f(vNormX + rectSize, vNormY - rectSize);
+      glEnd();
+    }
   }
   glBegin(GL_LINE_LOOP);
   glColor3f(255, 0, 255);
