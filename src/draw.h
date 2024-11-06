@@ -39,22 +39,22 @@ void drawPoinsF() {
       glBegin(GL_POLYGON);
       glColor3f(255, 0, 0);
       pointS centroD = datosCentrosG[i][j];
-      float vNormX = (centroD.x / 500) - 0.75;
-      float vNormY = (centroD.y / 500) - 0.5;
+      float vNormX = (centroD.x / 500) - 0.5;
+      float vNormY = (centroD.y / 500) - 0.25;
       float rectSize = 0.005;
-      glVertex2f(vNormX - rectSize, vNormY - rectSize);
-      glVertex2f(vNormX - rectSize, vNormY + rectSize);
-      glVertex2f(vNormX + rectSize, vNormY + rectSize);
-      glVertex2f(vNormX + rectSize, vNormY - rectSize);
+      glVertex2f(vNormX - rectSize + 0.002, vNormY - rectSize);
+      glVertex2f(vNormX - rectSize + 0.002, vNormY + rectSize);
+      glVertex2f(vNormX + rectSize - 0.002, vNormY + rectSize);
+      glVertex2f(vNormX + rectSize - 0.002, vNormY - rectSize);
       glEnd();
     }
   }
   glBegin(GL_LINE_LOOP);
   glColor3f(255, 0, 255);
-  glVertex2f(-0.6, -0.6); // inferior-izquierda
-  glVertex2f(-0.6, 0.6);  // inferior-derecha
-  glVertex2f(0.6, 0.6);   // superior-derecha
-  glVertex2f(0.6, -0.6);  // superior-izquierda
+  glVertex2f(-0.6, -0.6); // --
+  glVertex2f(-0.6, 0.6);  // -+
+  glVertex2f(0.6, 0.6);   // ++
+  glVertex2f(0.6, -0.6);  // +-
   glEnd();
 }
 
